@@ -1,0 +1,99 @@
+import UnityEngine
+import System
+from UnityEngine import *
+import time
+import thread
+
+Debug.Log( 'Hello World!' )
+Debug.Log( 'timeScale: %f' % Time.timeScale )
+Debug.Log('日本語ログテスト')
+
+class Timer:
+    # Create Timer Object
+    def __init__(self, interval, function, *args, **kwargs):
+        self.__lock = thread.allocate_lock()
+        self.__interval = interval
+        self.__function = function
+        self.__args = args
+        self.__kwargs = kwargs
+        self.__loop = False
+        self.__alive = False
+
+    # Start Timer Object
+    def start(self):
+        self.__lock.acquire()
+        if not self.__alive:
+            self.__loop = True
+            self.__alive = True
+            thread.start_new_thread(self.__run, ())
+        self.__lock.release()
+
+    # Stop Timer Object
+    def stop(self):
+        self.__lock.acquire()
+        self.__loop = False
+        self.__lock.release()
+
+    # kill thread
+    def abort(self):
+        thread.exit()
+
+    # Private Thread Function
+    def __run(self):
+        while self.__loop:
+            self.__function(*self.__args, **self.__kwargs)
+            time.sleep(self.__interval)
+        self.__alive = False
+
+# class test
+class TestClass():
+
+    go = GameObject.CreatePrimitive(PrimitiveType.Sphere)
+    vel = 10.0
+
+    count = 0.0
+
+    vertices = []
+    triangles = []
+
+    def Awake(self):
+        # create shpere
+        self.go.name = 'testGameObject'
+        self.go.transform.Rotate(Vector3(20,20,10))
+        self.go.transform.position = Vector3(2,0.0)
+        rigidbody = self.go.AddComponent( UnityEngine.Rigidbody )
+        rigidbody.isKinematic = True
+
+        # thread timer
+        self.Timer_object = Timer(60.0/1000.0, self.Loop, 'test')
+        self.Timer_object.start()
+
+    def Start(self):
+        Debug.Log("Start Method")
+
+    # You can only call from main thread.
+    def Update(self):
+        horizontal = Input.GetAxis("Mouse X") * self.vel * Time.deltaTime
+        vertical   = Input.GetAxis("Mouse Y") * self.vel * Time.deltaTime
+        self.go.transform.Rotate(horizontal, vertical, 0)
+        Debug.Log( 'Update: %f' % horizontal )
+
+    def TestMethod(self, this):
+        rot = self.go.transform.rotation
+        this.transform.rotation = rot
+        Debug.Log("TestMethod call")
+    
+    # callback test
+    def CallBackTest(self, cb):
+        cb()
+        Debug.Log("CallBackTest call")
+
+    def Loop(self,string):
+        self.count += 0.1
+
+    def TimerStop(self):
+        self.Timer_object.stop()
+        Debug.Log( "stop timer %f" % self.count)
+
+    def AbortThread(self):
+        self.Timer_object.abort()
