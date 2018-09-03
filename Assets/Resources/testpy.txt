@@ -46,7 +46,16 @@ class Timer:
         self.__alive = False
 
 # class test
-class TestClass():
+
+class BaseClass:
+    def __init__(self, str='', num=0):
+        self.str = str
+        self.num = num
+
+    def CallBaseClassMethod(self):
+        Debug.Log( '%s:%d' % (self.str,self.num) )
+
+class TestClass(BaseClass):
 
     go = GameObject.CreatePrimitive(PrimitiveType.Sphere)
     vel = 10.0
@@ -55,6 +64,10 @@ class TestClass():
 
     vertices = []
     triangles = []
+
+    def __init__(self, str='', num=0):
+        self.str = str
+        self.num = num
 
     def Awake(self):
         # create shpere

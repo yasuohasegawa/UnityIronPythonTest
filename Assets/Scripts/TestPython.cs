@@ -24,7 +24,7 @@ public class TestPython : MonoBehaviour {
         PythonCompile();
 
         // create python class
-        classRef = GetVariable("TestClass");
+        classRef = GetVariable("TestClass","test base class", 1234);
 
         // invoke TestClass.Awake() method
         InvokeMethod(classRef, "Awake");
@@ -34,6 +34,7 @@ public class TestPython : MonoBehaviour {
             Debug.Log("call from python");
         };
         InvokeMethod(classRef, "CallBackTest", cb);
+        InvokeMethod(classRef, "CallBaseClassMethod");
 
         Invoke("TimerStop", 10);
     }
@@ -81,9 +82,9 @@ public class TestPython : MonoBehaviour {
         }
     }
 
-    public object GetVariable(string name)
+    public object GetVariable(string name, params object[] parameters)
     {
-        return Operation.Invoke(Scope.GetVariable(name));
+        return Operation.Invoke(Scope.GetVariable(name), parameters);
     }
 
     void OnApplicationQuit()
